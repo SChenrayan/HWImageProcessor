@@ -89,9 +89,24 @@ def segment_image(img):
 # TODO: Assemble channel/img from chunks
 # TODO: Assemble image from channels
 
+def software_conv(image):
+    opencv_blurred = run_opencv_blur(image)
+    cv.imwrite("media/opencv_blurred.png", opencv_blurred)
+    print("Saved opencv_blurred...")
+
+    naive_blurred = run_naive_blur(image) # terribly terribly slow on the Pynq!
+    cv.imwrite("media/naive_blurred.png", naive_blurred)
+    print("Saved naive_blurred...")
+
+    opencv_time = timeit.timeit(lambda: run_opencv_blur(image), number=1)
+    naive_time = timeit.timeit(lambda: run_naive_blur(image), number=1)
+
+    print("OpenCV Time: ", opencv_time)
+    print("Naive Time: ", naive_time)
+
 def main(): 
-        
-    image_filename = "sunflower.png"
+    
+    image_filename = "media/sunflower.png"
     image = cv.imread(image_filename)
     print(image.shape)
     print("Total bytes of img: ",sys.getsizeof(image))
@@ -106,23 +121,6 @@ def main():
     blue_chunks = segment_image(b)
     for chunk in blue_chunks:
         print("chunk shape: ", chunk.shape)
-
-    '''
-    opencv_blurred = run_opencv_blur(image)
-    cv.imwrite("opencv_blurred.png", opencv_blurred)
-    print("Saved opencv_blurred...")
-
-    naive_blurred = run_naive_blur(image) # terribly terribly slow on the Pynq!
-    cv.imwrite("naive_blurred.png", naive_blurred)
-    print("Saved naive_blurred...")
-
-    opencv_time = timeit.timeit(lambda: run_opencv_blur(image), number=1)
-    naive_time = timeit.timeit(lambda: run_naive_blur(image), number=1)
-
-    print("OpenCV Time: ", opencv_time)
-    print("Naive Time: ", naive_time)
-    '''
-
 
 if __name__ == "__main__": 
     main()
