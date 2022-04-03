@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 import sys
 import timeit
+import math
 # from pynq import allocate
 
 # saturates/clamps value to 0 - 255
@@ -67,13 +68,46 @@ def run_opencv_blur(img):
     kernel = np.ones((3,3),np.float32)/9
     return cv.filter2D(img,-1,kernel)
 
+# segments an image or a channel of an image into 100 pixel
+# wide chunks
+def segment_image(img):
+    rows = len(img)               # image length
+    cols = len(img[0])            # image width
+
+    num_chunks = math.ceil(cols/100)
+
+    # split array into sub-arrays 
+    split_indices =[]
+    for i in range(1, num_chunks):
+        split_indices.append(100 * i)
+    print("split indices: ", split_indices)
+    chunks = np.split(img, split_indices, 1)
+    print("Chunk shape: ", chunks[0].shape)
+
+    return chunks
+
+# TODO: Assemble channel/img from chunks
+# TODO: Assemble image from channels
+
 def main(): 
         
     image_filename = "sunflower.png"
     image = cv.imread(image_filename)
     print(image.shape)
     print("Total bytes of img: ",sys.getsizeof(image))
+    print("Image width: ", len(image[0]))
+    print("Image length: ", len(image))
 
+    # get channels of image
+    b = image[:,:,0]
+    g = image[:,:,1]
+    r = image[:,:,2]
+
+    blue_chunks = segment_image(b)
+    for chunk in blue_chunks:
+        print("chunk shape: ", chunk.shape)
+
+    '''
     opencv_blurred = run_opencv_blur(image)
     cv.imwrite("opencv_blurred.png", opencv_blurred)
     print("Saved opencv_blurred...")
@@ -87,7 +121,7 @@ def main():
 
     print("OpenCV Time: ", opencv_time)
     print("Naive Time: ", naive_time)
-
+    '''
 
 
 if __name__ == "__main__": 
