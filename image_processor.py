@@ -82,12 +82,25 @@ def segment_image(img):
         split_indices.append(100 * i)
     print("split indices: ", split_indices)
     chunks = np.split(img, split_indices, 1)
-    print("Chunk shape: ", chunks[0].shape)
+    for chunk in chunks:
+        print("chunk shape: ", chunk.shape)
 
     return chunks
 
 # TODO: Assemble channel/img from chunks
+def assemble_chunks(chunks):
+    all_chunks = np.concatenate(chunks, axis=1) 
+    print("Overall chunk shape: ", all_chunks.shape)
+
+    return all_chunks
+
 # TODO: Assemble image from channels
+def assemble_channels(b, g, r): 
+    all_channels = np.stack((b, g, r), axis=2)
+    print("Image shape: ", all_channels.shape)
+
+    return all_channels
+
 
 def software_conv(image):
     opencv_blurred = run_opencv_blur(image)
@@ -105,8 +118,8 @@ def software_conv(image):
     print("Naive Time: ", naive_time)
 
 def main(): 
-    
     image_filename = "media/sunflower.png"
+    out_image_filename = "media/segmented.png"
     image = cv.imread(image_filename)
     print(image.shape)
     print("Total bytes of img: ",sys.getsizeof(image))
@@ -118,9 +131,21 @@ def main():
     g = image[:,:,1]
     r = image[:,:,2]
 
+    print("Blue chunks")
     blue_chunks = segment_image(b)
-    for chunk in blue_chunks:
-        print("chunk shape: ", chunk.shape)
+    print("Red chunks")
+    red_chunks = segment_image(r)
+    print("Green chunks")
+    green_chunks = segment_image(g)
+
+    new_blue = assemble_chunks(blue_chunks)
+    new_red = assemble_chunks(red_chunks)
+    new_green = assemble_chunks(green_chunks)
+
+    new_img = assemble_channels(new_blue, new_green, new_red)
+    cv.imwrite(filename=out_image_filename, img=new_img)
+
+
 
 if __name__ == "__main__": 
     main()
