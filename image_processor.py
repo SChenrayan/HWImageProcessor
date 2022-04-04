@@ -4,6 +4,11 @@ import sys
 import timeit
 import math
 # from pynq import allocate
+# from pynq import Overlay
+
+OVERLAY_PATH = ""
+OVERLAY = None
+# OVERLAY = Overlay(OVERLAY_PATH)
 
 # saturates/clamps value to 0 - 255
 def saturate(val):
@@ -71,7 +76,7 @@ def run_opencv_blur(img):
 # segments an image or a channel of an image into 100 pixel
 # wide chunks
 def segment_image(img):
-    rows = len(img)               # image length
+    # image length
     cols = len(img[0])            # image width
 
     num_chunks = math.ceil(cols/100)
@@ -101,7 +106,6 @@ def assemble_channels(b, g, r):
 
     return all_channels
 
-
 def software_conv(image):
     opencv_blurred = run_opencv_blur(image)
     cv.imwrite("media/opencv_blurred.png", opencv_blurred)
@@ -117,6 +121,41 @@ def software_conv(image):
     print("OpenCV Time: ", opencv_time)
     print("Naive Time: ", naive_time)
 
+def conv_dma(in_buf):
+    if OVERLAY is None: 
+        return in_buf.copy()
+    
+    out_buf = allocate(shape=in_buf.shape, dtype=np.uint8)
+    dma = OVERLAY.convDMA.axi_dma_0
+    dma.sendchannel.transfer(in_buf)
+    dma.recvchannel_transfer(out_buf)
+    dma.sendchannel.wait()
+    dma.recvchannel.wait()
+
+def stream_chunks(chunks): 
+    # TODO implement stuff with overlays 
+    new_chunks = []
+    for chunk in chunks:
+        flattened = chunk.flatten()
+        out_chunk = conv_dma(flattened)
+        new_chunks.append(np.reshape(out_chunk, chunk.shape))
+
+    return new_chunks
+
+def hw_conv(img): 
+    b = img[:,:,0]
+    g = img[:,:,1]
+    r = img[:,:,2]
+
+    channels = [b, g, r]
+    new_channels = []
+    for channel in channels: 
+        chunks = segment_image(channel)
+        new_chunks = stream_chunks(chunks)
+        new_channels.append(assemble_chunks(new_chunks))
+
+    return assemble_channels(new_channels[0], new_channels[1], new_channels[2])
+
 def main(): 
     image_filename = "media/sunflower.png"
     out_image_filename = "media/segmented.png"
@@ -126,26 +165,8 @@ def main():
     print("Image width: ", len(image[0]))
     print("Image length: ", len(image))
 
-    # get channels of image
-    b = image[:,:,0]
-    g = image[:,:,1]
-    r = image[:,:,2]
-
-    print("Blue chunks")
-    blue_chunks = segment_image(b)
-    print("Red chunks")
-    red_chunks = segment_image(r)
-    print("Green chunks")
-    green_chunks = segment_image(g)
-
-    new_blue = assemble_chunks(blue_chunks)
-    new_red = assemble_chunks(red_chunks)
-    new_green = assemble_chunks(green_chunks)
-
-    new_img = assemble_channels(new_blue, new_green, new_red)
+    new_img = hw_conv(image)
     cv.imwrite(filename=out_image_filename, img=new_img)
-
-
 
 if __name__ == "__main__": 
     main()
