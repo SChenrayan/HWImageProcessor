@@ -24,6 +24,6 @@ As of 4/6/22, we've gotten the core of our hardware and software working. We can
     - Image de-noising (erosion and dilation)
   - More user friendly PS interface
 
-### Usage
+### Usage - Project Update 2
 
-With the bitstream and hwh files, you can immediately run the `conv2d_hw.ipnyb` notebook. Modify the appropriate input and output file variable names as needed. For best results, stick to PNG images. The `media` directory has examples you can use as input files. 
+Copy the entire `project_update_two` directory to the pynq board. With the bitstream and hwh files, you can immediately run the `conv2d_hw.ipnyb` notebook. Modify the appropriate input and output file variable names as needed. For best results, stick to PNG images. The `media` directory has examples you can use as input files. 
