@@ -4,6 +4,13 @@ Project for EECE4632
 ## Description, so far
 As of 4/6/22, we've gotten the core of our hardware and software working. We can process any image, regardless of size, and convolve an arbitrary 3x3 kernel over it (allowing us to perform basic image processing operations such as blurring, sharpening, edge detection, etc). 
 
+### Data Pre-processing in Software
+To satisfy the DMA's memory constraints, the image is pre-processed on the software side. First, the three R, G, and B channels of the image are extracted. Each channel is then split into chunks that are 100 pixels wide using the `segment_image` function. Depending on the length of the image, these chunks may still be too big for the DMA block to handle. To make sure the data can fit in the DMA, each chunk is flattened and segmented further to have a maximum length of 10000 pixels.
+
+### Convolution in Hardware
+
+### Data Post-processing in Software
+
 ### Known Issues
 - There's an issue with some of our image filtering. Our hunch is that the kernels with negative values are not working properly, or otherwise leading to some overflow when our convolution IP does signed/unsigned operations. 
 
