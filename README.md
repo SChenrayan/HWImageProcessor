@@ -4,6 +4,20 @@ Project for EECE4632
 ## Description, so far
 As of 4/6/22, we've gotten the core of our hardware and software working. We can process any image, regardless of size, and convolve an arbitrary 3x3 kernel over it (allowing us to perform basic image processing operations such as blurring, sharpening, edge detection, etc). 
 
+### Hardware side
+
+Our convolution IP block takes in three inputs - the input pixel, the `kernel` (currently limited to 3x3), and the `scaleFactor`. There is one output - the output pixel. The input and output pixels are transmitted through the AXI streaming interface, while the `kernel` and `scaleFactor` are transmitted via axilite. For maximum portability, we assume that the input pixel stream describes an image chunk that is 100 pixels wide (100 pixels is arbitrary - this number could just as easily have been 150 or 200, and could be changed going forward, perhaps as a part of our design-space exploration). Constraining the image chunk width allows us to avoid variable-length arrays and loops, which could degrade the performance of our hardware. Any image can be handled by breaking it up into chunks 100 pixels wide and sequentially feeding the chunks through our hardware block; however, segmenting/assembling the image must occur as a part of the software pre- and post-processing stage. 
+
+### Software side
+
+The software side of our design takes care of file operations (i.e. reading and writing image files); we make use of OpenCV, which provides enough basic functionality for us to convert image to pixel arrays.
+
+#### Pre-processing and post-processing
+
+To satisfy the DMA's memory constraints, the pixel-array is pre-processed on the software side. First, the three R, G, and B channels of the image are extracted. Each channel is then split into chunks that are 100 pixels wide using the `segment_image` function. Depending on the length of the image, these chunks may still be too big for the DMA block to handle. To make sure the data can fit in the DMA, each chunk is flattened and segmented further to have a maximum length of 10000 bytes.
+
+Once the convolution IP block returns its output, we have to re-assemble the pixel channels from each chunk, essentially performing the reverse operations of the pre-processing step. We then put together each channel, and write the filtered image out to the desired file.  
+
 ### Known Issues
 - There's an issue with some of our image filtering. Our hunch is that the kernels with negative values are not working properly, or otherwise leading to some overflow when our convolution IP does signed/unsigned operations. 
 
