@@ -1,7 +1,20 @@
 # HWImageProcessor
 Project for EECE4632
 
-## Description, so far
+## Project Update 3 - 4/21/22
+
+### Usage 
+
+Please see the pngs, notebook, bitstream, hwh files in the `project_update_three` directory for an optimized version of our convolution IP. You might have to fiddle around with the filenames - for instance, make sure the overlay is set correctly.
+```
+OVERLAY = "actually_fixed.bit"
+```
+
+Similarly, you might need to adjust the image filepaths (we recommend using `sunflower.png` and `food.png` as inputs but if you're feeling adventurous, any PNG should work fine). As always, feel free to contact us if you're having setup troubles.
+
+For a more detailed description of the project, please see the report. 
+
+## Project Update 2 (4/7/22)
 As of 4/6/22, we've gotten the core of our hardware and software working. We can process any image, regardless of size, and convolve an arbitrary 3x3 kernel over it (allowing us to perform basic image processing operations such as blurring, sharpening, edge detection, etc). 
 
 ### Hardware side
@@ -18,26 +31,14 @@ To satisfy the DMA's memory constraints, the pixel-array is pre-processed on the
 
 Once the convolution IP block returns its output, we have to re-assemble the pixel channels from each chunk, essentially performing the reverse operations of the pre-processing step. We then put together each channel, and write the filtered image out to the desired file.  
 
-### Known Issues
-- There's an issue with some of our image filtering. Our hunch is that the kernels with negative values are not working properly, or otherwise leading to some overflow when our convolution IP does signed/unsigned operations. 
-
 ### Plan
-- Lots of room for optimization!
-  - Our current HLS code contains basically no optimizations, and we definitely have the opportunity to do some design space exploration here similar to HW4.
-  - Pixel packing
-    - Currently, we stream each channel of each pixel (an unsigned 8 bit value). Instead of operating on each channel independently, we can pack each channel together and stream 24-bit pixels instead. 
-    - The hardware IP block will have to do a little more work to de-package and re-package the pixel, but we then would only iterate over the image once, instead of thrice (once for each channel). 
-    - This will hopefully significantly improve performance.
-  - Optimizing pre- and post-processing on the PS side
-    - These are expensive operations that require manipulation of thousands of pixels.
-    - For instance, finding a way to increase the DMA's buffer size will allow us to stream more pixels at once - don't have to break up into as many chunks on the PS.
-  - Parallel convolution blocks
-    - Instead of having one convolution block process all pixels, can we use multiple blocks to process chunks of the image in parallel?   
+- Testing and performance analysis 
 - New features
-  - Implementing IP for different types of operations that also rely on kernel application
-    - Image de-noising (erosion and dilation)
   - More user friendly PS interface
 
-### Usage - Project Update 2
+### Usage - Project Update 2 4/7/22
 
 Copy the entire `project_update_two` directory to the pynq board. With the bitstream and hwh files, you can immediately run the `conv2d_hw.ipnyb` notebook. Modify the appropriate input and output file variable names as needed. For best results, stick to PNG images. The `media` directory has examples you can use as input files. 
+
+
+
