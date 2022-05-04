@@ -1,6 +1,17 @@
 # HWImageProcessor
 Project for EECE4632
 
+## Final Project Update - 5/4/22
+
+### Usage
+
+See the usage notes for `Project Update 3` since not much has changed to be able to run the project
+
+### Changes since last update
+
+- Testing: validation and timing
+- Attempt at implementing zero-padding (see `conv2D_hw_with_padding.py`)
+
 ## Project Update 3 - 4/21/22
 
 ### Usage 
