@@ -5,7 +5,7 @@ Project for EECE4632
 
 ### Usage
 
-See the usage notes for `Project Update 3` since not much has changed to be able to run the project
+See the usage notes for `Project Update 3` since nothing has changed in terms of running the project
 
 ### Changes since last update
 
